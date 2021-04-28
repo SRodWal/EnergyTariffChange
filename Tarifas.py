@@ -37,7 +37,9 @@ data = [ ["May de 2016",	1.4588,	3.6051,	3.9370,	2.3989,	2.2441],
         ["January de 2021",	3.4281,	4.4608,	4.4883,	2.7093,	2.5355],
         ["April de 2021",	3.3657,	4.3796,	4.4082,	2.6437,	2.4725],
         ]
-medpow = [246.5493,246.5493,250.0]
+medpow = [246.5493,246.5493,250.7668,252.3153, 252.4918,252.4920,252.6116, 
+          253.4864, 257.6204, 260.6356, 262.8404, 287.7614, 295.9551, 297.2365, 
+          297.9744, 304.7970, 305.6773, 310.1292, 311.3043, 313.4589]
 cols = ["Fecha","Residencial (< 50 kWh)", "Residencial (> 50 kWh)", "Baja Tensión", "Media Tensión", "Alta Tensión"]
 # Crear vector de tiempo
 yrs = [i for i in range(2016,2022)]
@@ -51,11 +53,12 @@ for y in yrs:
 df = pd.DataFrame(np.array(data), columns = cols)
 df[df.columns[0]] = pd.DataFrame(np.array(timevec))
 dftar = df.drop(df.columns[0], axis=1)
+dftar.insert(4, "Potencia MT", medpow, True)
 for name in dftar.columns:
         df = dftar[name]
         df = pd.to_numeric(df, errors = "coerce")
         dftar[name] = df
-
+powdf = pd.DataFrame(medpow, columns = ["Potencia MT"])
 #dftar.describe().to_excel("Tarifas.xlsx")
 fig = plt.figure(figsize = (8,6))
 [sb.distplot(dftar[i]) for i in dftar.columns ]
@@ -63,14 +66,14 @@ fig.legend(labels = dftar.columns)
 plt.show()
 
 tar = []
-for name in dftar.columns[2:4]:
+for name in dftar.columns[2:5]:
     tarch = []  
     for i in range(0,len(data)-1):
         tarch.append(2*(dftar[name][i+1]-dftar[name][i])/(dftar[name][i]+dftar[name][i+1])*100)
     tar.append(tarch)
 
 ### Generar variables aleatorias con las distribuciones
-N = 8
+N = 15
 ps = []
 xs = []
 randystat = []
@@ -101,21 +104,41 @@ for tarif in tar:
 
 #### Montecarlo simulation
 period = 4*20 #20 yrs
-Nsimu = 1 #Number of runs
+Nsimu = 10000 #Number of runs
 meantar = []
-for stat in randystat:
+stdtar = []
+tar0 = [data[-1][3],data[-1][4], medpow[-1]]
+for stat, k in zip(randystat,range(0,3)):
     store = []
-    for j in range(0,50000):
-        tar_profile = [data[-1][3]]
+    for j in range(0,Nsimu):
+        tar_profile = [tar0[k]]
         for i in range(0,period):
             tar_profile.append(tar_profile[-1]*(1+np.random.choice(stat[0], p = stat[1])/100))
         store.append(tar_profile)    
         plt.plot(tar_profile)
-    meantar.append([sum([store[i][j] for i in range(0,500)])/500 for j in range(0, period)]) 
+    meantar.append([sum([store[i][j] for i in range(0,Nsimu)])/Nsimu for j in range(0, period)]) 
+    stdtar.append([np.std([store[i][j] for i in range(0,Nsimu)]) for j in range(0, period)])
     plt.show()
-plt.plot(meantar[0])
-plt.plot(meantar[1])
+plt.figure(figsize = (12,8))
+plt.title("Evolucion temporal de tarifas")    
+plt.plot(meantar[0], color = "blue", label = "Baja Tensión")
+plt.fill_between(range(0,4*20), [x-d/2 for x,d in zip(meantar[0],stdtar[0])],[x+d/2 for x,d in zip(meantar[0],stdtar[0])],
+                 color = "blue",alpha = 0.2)
+plt.plot(meantar[1], color = "orange", label  = "Media Tensión")
+plt.fill_between(range(0,4*20), [x-d/2 for x,d in zip(meantar[1],stdtar[1])],[x+d/2 for x,d in zip(meantar[1],stdtar[1])], 
+                 color = "orange", alpha = 0.2)
+plt.xlabel("Trimestres")
+plt.ylabel("Tarifa")
+plt.legend()
 plt.show()
+
+plt.plot(meantar[2])
+plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[2],stdtar[2])],[x+d for x,d in zip(meantar[2],stdtar[2])], alpha = 0.2)
+plt.show()
+
+#MCdftar = pd.DataFrame(np.array(meantar).T,columns = dftar.columns[2:5])
+#MCdftar.to_excel("Tarifas a futuro - Metodo Montecarlo.xlsx")
+#MCdftar.describe().to_excel("Descripcion de Tarifas a futuro.xlsx")
 
 mando = "the_mandalorian_bell.mp3"
 playsound(mando)
