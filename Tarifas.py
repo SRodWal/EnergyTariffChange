@@ -37,7 +37,9 @@ data = [ ["May de 2016",	1.4588,	3.6051,	3.9370,	2.3989,	2.2441],
         ["January de 2021",	3.4281,	4.4608,	4.4883,	2.7093,	2.5355],
         ["April de 2021",	3.3657,	4.3796,	4.4082,	2.6437,	2.4725],
         ]
-medpow = [246.5493,246.5493,250.0]
+medpow = [246.5493,246.5493,250.7668,252.3153, 252.4918,252.4920,252.6116, 
+          253.4864, 257.6204, 260.6356, 262.8404, 287.7614, 295.9551, 297.2365, 
+          297.9744, 304.7970, 305.6773, 310.1292, 311.3043, 313.4589]
 cols = ["Fecha","Residencial (< 50 kWh)", "Residencial (> 50 kWh)", "Baja Tensión", "Media Tensión", "Alta Tensión"]
 # Crear vector de tiempo
 yrs = [i for i in range(2016,2022)]
@@ -51,11 +53,12 @@ for y in yrs:
 df = pd.DataFrame(np.array(data), columns = cols)
 df[df.columns[0]] = pd.DataFrame(np.array(timevec))
 dftar = df.drop(df.columns[0], axis=1)
+dftar.insert(4, "Potencia MT", medpow, True)
 for name in dftar.columns:
         df = dftar[name]
         df = pd.to_numeric(df, errors = "coerce")
         dftar[name] = df
-
+powdf = pd.DataFrame(medpow, columns = ["Potencia MT"])
 #dftar.describe().to_excel("Tarifas.xlsx")
 fig = plt.figure(figsize = (8,6))
 [sb.distplot(dftar[i]) for i in dftar.columns ]
@@ -70,7 +73,7 @@ for name in dftar.columns[2:4]:
     tar.append(tarch)
 
 ### Generar variables aleatorias con las distribuciones
-N = 8
+N = 19
 ps = []
 xs = []
 randystat = []
@@ -105,7 +108,7 @@ Nsimu = 1 #Number of runs
 meantar = []
 for stat in randystat:
     store = []
-    for j in range(0,50000):
+    for j in range(0,500):
         tar_profile = [data[-1][3]]
         for i in range(0,period):
             tar_profile.append(tar_profile[-1]*(1+np.random.choice(stat[0], p = stat[1])/100))
