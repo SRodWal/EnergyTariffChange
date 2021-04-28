@@ -73,7 +73,7 @@ for name in dftar.columns[2:5]:
     tar.append(tarch)
 
 ### Generar variables aleatorias con las distribuciones
-N = 15
+N = 19
 ps = []
 xs = []
 randystat = []
