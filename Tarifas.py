@@ -37,6 +37,7 @@ data = [ ["May de 2016",	1.4588,	3.6051,	3.9370,	2.3989,	2.2441],
         ["January de 2021",	3.4281,	4.4608,	4.4883,	2.7093,	2.5355],
         ["April de 2021",	3.3657,	4.3796,	4.4082,	2.6437,	2.4725],
         ]
+medpow = [246.5493,246.5493,250.0]
 cols = ["Fecha","Residencial (< 50 kWh)", "Residencial (> 50 kWh)", "Baja Tensión", "Media Tensión", "Alta Tensión"]
 # Crear vector de tiempo
 yrs = [i for i in range(2016,2022)]
@@ -72,7 +73,6 @@ for name in dftar.columns[2:4]:
 N = 8
 ps = []
 xs = []
-intplos = []
 randystat = []
 for tarif in tar:
     low = min(tarif)
@@ -98,10 +98,24 @@ for tarif in tar:
           fi.append(f(xi))   
     nfi = [f/sum(fi) for f in fi]      
     randystat.append([xnew,nfi])
-    intplos.append([f,p,[low,up,dt]])
 
-
-
+#### Montecarlo simulation
+period = 4*20 #20 yrs
+Nsimu = 1 #Number of runs
+meantar = []
+for stat in randystat:
+    store = []
+    for j in range(0,50000):
+        tar_profile = [data[-1][3]]
+        for i in range(0,period):
+            tar_profile.append(tar_profile[-1]*(1+np.random.choice(stat[0], p = stat[1])/100))
+        store.append(tar_profile)    
+        plt.plot(tar_profile)
+    meantar.append([sum([store[i][j] for i in range(0,500)])/500 for j in range(0, period)]) 
+    plt.show()
+plt.plot(meantar[0])
+plt.plot(meantar[1])
+plt.show()
 
 mando = "the_mandalorian_bell.mp3"
 playsound(mando)
