@@ -66,7 +66,7 @@ fig.legend(labels = dftar.columns)
 plt.show()
 
 tar = []
-for name in dftar.columns[2:4]:
+for name in dftar.columns[2:5]:
     tarch = []  
     for i in range(0,len(data)-1):
         tarch.append(2*(dftar[name][i+1]-dftar[name][i])/(dftar[name][i]+dftar[name][i+1])*100)
@@ -104,21 +104,36 @@ for tarif in tar:
 
 #### Montecarlo simulation
 period = 4*20 #20 yrs
-Nsimu = 1 #Number of runs
+Nsimu = 100 #Number of runs
 meantar = []
-for stat in randystat:
+stdtar = []
+tar0 = [data[-1][3],data[-1][4], medpow[-1]]
+for stat, k in zip(randystat,range(0,3)):
     store = []
-    for j in range(0,500):
-        tar_profile = [data[-1][3]]
+    for j in range(0,Nsimu):
+        tar_profile = [tar0[k]]
         for i in range(0,period):
             tar_profile.append(tar_profile[-1]*(1+np.random.choice(stat[0], p = stat[1])/100))
         store.append(tar_profile)    
         plt.plot(tar_profile)
-    meantar.append([sum([store[i][j] for i in range(0,500)])/500 for j in range(0, period)]) 
+    meantar.append([sum([store[i][j] for i in range(0,Nsimu)])/Nsimu for j in range(0, period)]) 
+    stdtar.append([np.std([store[i][j] for i in range(0,Nsimu)]) for j in range(0, period)])
     plt.show()
 plt.plot(meantar[0])
-plt.plot(meantar[1])
+plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[0],stdtar[0])],[x+d for x,d in zip(meantar[0],stdtar[0])], alpha = 0.2)
 plt.show()
+
+plt.plot(meantar[1])
+plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[1],stdtar[1])],[x+d for x,d in zip(meantar[1],stdtar[1])], alpha = 0.2)
+plt.show()
+
+plt.plot(meantar[2])
+plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[2],stdtar[2])],[x+d for x,d in zip(meantar[2],stdtar[2])], alpha = 0.2)
+plt.show()
+
+#MCdftar = pd.DataFrame(np.array(meantar).T,columns = dftar.columns[2:5])
+#MCdftar.to_excel("Tarifas a futuro - Metodo Montecarlo.xlsx")
+#MCdftar.describe().to_excel("Descripcion de Tarifas a futuro.xlsx")
 
 mando = "the_mandalorian_bell.mp3"
 playsound(mando)
