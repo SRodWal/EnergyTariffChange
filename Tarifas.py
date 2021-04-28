@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
+from scipy.interpolate import interp1d
 
 from playsound import playsound # Just for fun
 
@@ -68,12 +69,37 @@ for name in dftar.columns[2:4]:
     tar.append(tarch)
 
 ### Generar variables aleatorias con las distribuciones
-low = min(tar[0])
-up = max(tar[0])
-dt = (up-low)/7
-x = [0]
-for i in range(0,7):
-    x.append(low+dt*i)
+N = 8
+ps = []
+xs = []
+intplos = []
+randystat = []
+for tarif in tar:
+    low = min(tarif)
+    up = max(tarif)
+    dt = (up-low)/N
+    x = [low-dt]
+    p = [0]
+    for i in range(0,N+2):
+        x.append(low+dt*i)
+    for t in x[0:len(x)-1]:
+        p.append(sum([1 for i in tarif if (t<=i)&(i<t+dt)]))   
+    ps.append(p)
+    xs.append(x)
+    f = interp1d(x,p, kind = "cubic")
+    xnew = [low+i*(N)*dt/100 for i in range(0,101)]
+    plt.plot(xnew,f(xnew))
+    plt.show()
+    fi = []
+    for xi in xnew:
+        if f(xi)<0:
+            fi.append(0)
+        else:
+          fi.append(f(xi))   
+    nfi = [f/sum(fi) for f in fi]      
+    randystat.append([xnew,nfi])
+    intplos.append([f,p,[low,up,dt]])
+
 
 
 
