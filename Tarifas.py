@@ -59,10 +59,21 @@ fig = plt.figure(figsize = (8,6))
 [sb.distplot(dftar[i]) for i in dftar.columns ]
 fig.legend(labels = dftar.columns)
 plt.show()
-tarch = []
-for i in range(0,len(data)-1):
-    tarch.append(2*(dftar[dftar.columns[2]][i+1]-dftar[dftar.columns[2]][i])/(dftar[dftar.columns[2]][i]+dftar[dftar.columns[2]][i+1])*100)
-    
+
+tar = []
+for name in dftar.columns[2:4]:
+    tarch = []  
+    for i in range(0,len(data)-1):
+        tarch.append(2*(dftar[name][i+1]-dftar[name][i])/(dftar[name][i]+dftar[name][i+1])*100)
+    tar.append(tarch)
+
+### Generar variables aleatorias con las distribuciones
+low = min(tar[0])
+up = max(tar[0])
+dt = (up-low)/7
+x = [0]
+for i in range(0,7):
+    x.append(low+dt*i)
 
 
 
