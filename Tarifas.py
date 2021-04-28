@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import seaborn as sb
 import matplotlib.pyplot as plt
-from scipy.interpolate import interp1d
+import scipy
 
 from playsound import playsound # Just for fun
 
@@ -73,38 +73,22 @@ for name in dftar.columns[2:5]:
     tar.append(tarch)
 
 ### Generar variables aleatorias con las distribuciones
-N = 15
-ps = []
-xs = []
+dftarch = pd.DataFrame(np.array(tar).T,columns = dftar.columns[2:5])   
 randystat = []
-for tarif in tar:
-    low = min(tarif)
-    up = max(tarif)
-    dt = (up-low)/N
-    x = [low-dt]
-    p = [0]
-    for i in range(0,N+2):
-        x.append(low+dt*i)
-    for t in x[0:len(x)-1]:
-        p.append(sum([1 for i in tarif if (t<=i)&(i<t+dt)]))   
-    ps.append(p)
-    xs.append(x)
-    f = interp1d(x,p, kind = "cubic")
-    xnew = [low+i*(N)*dt/100 for i in range(0,101)]
-    plt.plot(xnew,f(xnew))
-    plt.show()
-    fi = []
-    for xi in xnew:
-        if f(xi)<0:
-            fi.append(0)
-        else:
-          fi.append(f(xi))   
-    nfi = [f/sum(fi) for f in fi]      
-    randystat.append([xnew,nfi])
+for name in dftarch.columns:
+    x = np.linspace(-20,20,250)
+    mean, var  = scipy.stats.distributions.norm.fit(dftarch[name])
+    fitted_data = scipy.stats.distributions.norm.pdf(x, mean, var)
+    nfi = fitted_data/sum(fitted_data)
+    randystat.append([x,nfi])
+    
+plt.figure(figsize = (8,6))    
+[plt.plot(x, y[1]) for y in randystat]
+plt.show()   
 
 #### Montecarlo simulation
 period = 4*20 #20 yrs
-Nsimu = 10000 #Number of runs
+Nsimu = 100000 #Number of runs
 meantar = []
 stdtar = []
 tar0 = [data[-1][3],data[-1][4], medpow[-1]]
@@ -136,9 +120,9 @@ plt.plot(meantar[2])
 plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[2],stdtar[2])],[x+d for x,d in zip(meantar[2],stdtar[2])], alpha = 0.2)
 plt.show()
 
-#MCdftar = pd.DataFrame(np.array(meantar).T,columns = dftar.columns[2:5])
-#MCdftar.to_excel("Tarifas a futuro - Metodo Montecarlo.xlsx")
-#MCdftar.describe().to_excel("Descripcion de Tarifas a futuro.xlsx")
+MCdftar = pd.DataFrame(np.array(meantar).T,columns = dftar.columns[2:5])
+MCdftar.to_excel("Tarifas a futuro - Metodo Montecarlo2.xlsx")
+MCdftar.describe().to_excel("Descripcion de Tarifas a futuro2.xlsx")
 
 mando = "the_mandalorian_bell.mp3"
 playsound(mando)
