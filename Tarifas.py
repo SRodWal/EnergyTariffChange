@@ -73,7 +73,7 @@ for name in dftar.columns[2:5]:
     tar.append(tarch)
 
 ### Generar variables aleatorias con las distribuciones
-N = 19
+N = 15
 ps = []
 xs = []
 randystat = []
@@ -104,7 +104,7 @@ for tarif in tar:
 
 #### Montecarlo simulation
 period = 4*20 #20 yrs
-Nsimu = 100 #Number of runs
+Nsimu = 10000 #Number of runs
 meantar = []
 stdtar = []
 tar0 = [data[-1][3],data[-1][4], medpow[-1]]
@@ -119,12 +119,17 @@ for stat, k in zip(randystat,range(0,3)):
     meantar.append([sum([store[i][j] for i in range(0,Nsimu)])/Nsimu for j in range(0, period)]) 
     stdtar.append([np.std([store[i][j] for i in range(0,Nsimu)]) for j in range(0, period)])
     plt.show()
-plt.plot(meantar[0])
-plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[0],stdtar[0])],[x+d for x,d in zip(meantar[0],stdtar[0])], alpha = 0.2)
-plt.show()
-
-plt.plot(meantar[1])
-plt.fill_between(range(0,4*20), [x-d for x,d in zip(meantar[1],stdtar[1])],[x+d for x,d in zip(meantar[1],stdtar[1])], alpha = 0.2)
+plt.figure(figsize = (12,8))
+plt.title("Evolucion temporal de tarifas")    
+plt.plot(meantar[0], color = "blue", label = "Baja Tensión")
+plt.fill_between(range(0,4*20), [x-d/2 for x,d in zip(meantar[0],stdtar[0])],[x+d/2 for x,d in zip(meantar[0],stdtar[0])],
+                 color = "blue",alpha = 0.2)
+plt.plot(meantar[1], color = "orange", label  = "Media Tensión")
+plt.fill_between(range(0,4*20), [x-d/2 for x,d in zip(meantar[1],stdtar[1])],[x+d/2 for x,d in zip(meantar[1],stdtar[1])], 
+                 color = "orange", alpha = 0.2)
+plt.xlabel("Trimestres")
+plt.ylabel("Tarifa")
+plt.legend()
 plt.show()
 
 plt.plot(meantar[2])
