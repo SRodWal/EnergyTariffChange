@@ -123,6 +123,7 @@ plt.show()
 MCdftar = pd.DataFrame(np.array(meantar).T,columns = dftar.columns[2:5])
 MCdftar.to_excel("Tarifas a futuro - Metodo Montecarlo2.xlsx")
 MCdftar.describe().to_excel("Descripcion de Tarifas a futuro2.xlsx")
-
+stddf = pd.DataFrame(np.array(stdtar).T, columns = dftar.columns[2:5])
+stddf.to_excel("STD.xlsx")
 mando = "the_mandalorian_bell.mp3"
 playsound(mando)
