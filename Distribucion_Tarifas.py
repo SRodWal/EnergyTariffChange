@@ -1,5 +1,11 @@
 import pandas as pd
 import numpy as np
+import datetime as dt
+import dateutil
+import seaborn as sb
+
+def monthNum(num):
+    return {1 : "Jan", 2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",7:"Jul",8:"Aug",9:"Sep",10: "Oct",11:"Nov",12:"Dec"}[num]
 
 data = [ ["May de 2016",	1.4588,	3.6051,	3.9370,	2.3989,	2.2441], 
         ["July de 2016",	1.4588,	3.6051,	3.9370,	2.3989,	2.2441],
@@ -26,10 +32,28 @@ MTpot = [246.5493,246.5493,250.7668,252.3153, 252.4918,252.4920,252.6116,
           253.4864, 257.6204, 260.6356, 262.8404, 287.7614, 295.9551, 297.2365, 
           297.9744, 304.7970, 305.6773, 310.1292, 311.3043, 313.4589]
 cols = ["Fecha","Residencial (< 50 kWh)", "Residencial (> 50 kWh)", "Baja Tensión", "Media Tensión","Potencia @ MT", "Alta Tensión"]
+#### Generar dataframe de tarifas
+timevec = [dt.datetime(2016,5,1)]
+for n in range(1,len(data)):
+    timevec.append(timevec[-1]+dateutil.relativedelta.relativedelta(months=3))
 datarray = np.array(data)
 datarray = np.insert(datarray, 5, MTpot, axis = 1)
 df = pd.DataFrame (datarray, columns = cols)
+df["Fecha"]=timevec
 df = df.set_index(cols[0])
+
+#### Analizar cambios pocentuales de tarifas
+datarray = np.delete(datarray, 0,1)
+datarray = datarray.astype(float)
+Tchlist = [(100*np.divide(np.subtract(datarray[1],datarray[0]),datarray[1])).tolist()]
+for i in range(1,len(data)-1):
+    trray = (100*np.divide(np.subtract(datarray[i+1],datarray[i]),datarray[i+1])).tolist()
+    Tchlist.append(trray)
+dft = pd.DataFrame(Tchlist, columns = cols[1:7])
+
+
+
+
 
 
 
