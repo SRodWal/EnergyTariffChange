@@ -61,10 +61,12 @@ plt.show()
 # Crear distribuciones
 variables = cols[1:7]
 normstats = []
-normfit = []
 skewstats = []
+kurstats = []
+normfit = []
 skewfit = []
 burrfit = []
+disttype = ["norm", "skewnorm", "burr"]
 x = np.linspace(-40,40,100) # Rango de cambios porcentuales
 for v in variables:
     nstat = scipy.stats.distributions.norm.fit(dft[v]) # Normal
@@ -75,16 +77,21 @@ for v in variables:
     burrfit.append(scipy.stats.burr.pdf(x, kurstat[0], kurstat[1], kurstat[2], kurstat[3]))
     normstats.append(nstat)
     skewstats.append(skstat)
+    kurstats.append(kurstat)
 
-for n in range(0, len(variables)):
+for n, name in zip(range(0, len(variables)), variables):
     plt.figure(num = n)
-    plt.title(variables[n])
-    sb.distplot(dft[variables[n]], rug = True, hist = False)
+    plt.title(name)
+    sb.distplot(dft[name], rug = True, hist = False)
+    for dtype in disttype:
+        kstest = scipy.stats.kstest(dft[name], dtype, normstats[n])
+        print(kstest)
     plt.plot(x, normfit[n])
     plt.plot(x, skewfit[n])
     plt.plot(x, burrfit[n])
     plt.legend(["Data-Hist","Normal","Skew","Kurtosis"])
     plt.show()
+    
 
 
 
