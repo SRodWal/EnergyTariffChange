@@ -92,7 +92,7 @@ for name, dtype in zip(var,disttype):
     plt.show()
     
 #### Simulacion Montecarlo 
-Nsim = 100 #Numero de replicas
+Nsim = 10000 #Numero de replicas
 Ntime = 20*4 # Numero de trimestres
 tarif0 = [float(df[name].loc[0]) for name in var] # Tarifas iniciales
 dftar = pd.DataFrame() # Dataframe vario para precios
@@ -104,15 +104,16 @@ for name, tar0, distfit in zip(var,tarif0, distfits):
     for i in range(0,Nsim):
         tar=[tar0]
         for j in range(0,Ntime):
-            ntar = tar[-1]*(1+np.random.choice(x, p = distfit)/100)
-            tar.append(ntar)
+            tar.append(tar[-1]*(1+0.01*np.random.choice(x, p = distfit)))
         tarlist.append(tar)
-    vardfs.append(pd.DataFrame(np.array(tarlist).T))    
-    plt.plot(vardfs[-1])
-    plt.title(name)
-    plt.show()
+        del tar
+    #vardfs.append(pd.DataFrame(np.array(tarlist).T))   # grafica todas las replicas 
+    #plt.plot(vardfs[-1])
+    #plt.title(name)
+    #plt.show()
     meantar.append([np.mean(f) for f in np.array(tarlist).T])
     stdtar.append([np.std(f) for f in np.array(tarlist).T])
+    del tarlist
 
 ### Desplegamos Resultados
 # Tarifas normales
@@ -136,7 +137,7 @@ columns = var+[name+" STD" for name in var]
 dftar = pd.DataFrame(np.array(meantar+stdtar).T, columns = columns)
 dftar["Fecha"] = timevec
 dftar = dftar.set_index("Fecha")
-#dftar.to_excel("MCSimulacion - Tarifas a futuri.xlsx")
+dftar.to_excel("MCSimulacion - Tarifas a futuro.xlsx")
 mando = "the_mandalorian_bell.mp3"
 playsound(mando)
 
