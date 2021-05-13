@@ -1,8 +1,10 @@
 import pandas as pd
 import numpy as np
 import datetime as dt
-import dateutil
+import dateutil # Nos ayuda a agregat meses al datetime
 import seaborn as sb
+import matplotlib.pyplot as plt
+import scipy # Ayuda a crear distribuciones y arreglos
 
 def monthNum(num):
     return {1 : "Jan", 2:"Feb",3:"Mar",4:"Apr",5:"May",6:"Jun",7:"Jul",8:"Aug",9:"Sep",10: "Oct",11:"Nov",12:"Dec"}[num]
@@ -49,8 +51,40 @@ Tchlist = [(100*np.divide(np.subtract(datarray[1],datarray[0]),datarray[1])).tol
 for i in range(1,len(data)-1):
     trray = (100*np.divide(np.subtract(datarray[i+1],datarray[i]),datarray[i+1])).tolist()
     Tchlist.append(trray)
+#Dataframe con cambios porcentuales
 dft = pd.DataFrame(Tchlist, columns = cols[1:7])
+#Graficar histograma de cambios porcentuales
+plt.figure(num = 1, figsize = (6,4))
+[sb.distplot(dft[name], rug = True, hist = False) for name in dft.columns]
+plt.legend(dft.columns)
+plt.show()
+# Crear distribuciones
+variables = cols[1:7]
+normstats = []
+normfit = []
+skewstats = []
+skewfit = []
+burrfit = []
+x = np.linspace(-40,40,100) # Rango de cambios porcentuales
+for v in variables:
+    nstat = scipy.stats.distributions.norm.fit(dft[v]) # Normal
+    skstat = scipy.stats.distributions.skewnorm.fit(dft[v]) #Skew
+    kurstat = scipy.stats.burr.fit(dft[v]) #Kurtosis
+    normfit.append(scipy.stats.distributions.norm.pdf(x, nstat[0], nstat[1]))
+    skewfit.append(scipy.stats.distributions.skewnorm.pdf(x, skstat[0], skstat[1],skstat[2]))
+    burrfit.append(scipy.stats.burr.pdf(x, kurstat[0], kurstat[1], kurstat[2], kurstat[3]))
+    normstats.append(nstat)
+    skewstats.append(skstat)
 
+for n in range(0, len(variables)):
+    plt.figure(num = n)
+    plt.title(variables[n])
+    sb.distplot(dft[variables[n]], rug = True, hist = False)
+    plt.plot(x, normfit[n])
+    plt.plot(x, skewfit[n])
+    plt.plot(x, burrfit[n])
+    plt.legend(["Data-Hist","Normal","Skew","Kurtosis"])
+    plt.show()
 
 
 
