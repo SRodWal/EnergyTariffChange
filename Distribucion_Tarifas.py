@@ -60,41 +60,40 @@ plt.legend(dft.columns)
 plt.show()
 # Crear distribuciones
 variables = cols[1:7]
-normstats = []
-skewstats = []
-kurstats = []
-normfit = []
-skewfit = []
-burrfit = []
 disttype = ["norm", "skewnorm","burr"]
+legend = disttype+["Data-Hist"]
 x = np.linspace(-40,40,100) # Rango de cambios porcentuales
-for v in variables:
-    nstat = scipy.stats.distributions.norm.fit(dft[v]) # Normal
-    skstat = scipy.stats.distributions.skewnorm.fit(dft[v]) #Skew
-    kurstat = scipy.stats.burr.fit(dft[v]) #Kurtosis
-    normfit.append(scipy.stats.distributions.norm.pdf(x, nstat[0], nstat[1]))
-    skewfit.append(scipy.stats.distributions.skewnorm.pdf(x, skstat[0], skstat[1],skstat[2]))
-    burrfit.append(scipy.stats.burr.pdf(x, kurstat[0], kurstat[1], kurstat[2], kurstat[3]))
-    normstats.append(nstat)
-    skewstats.append(skstat)
-    kurstats.append(kurstat)
+
+def probadensityfun(dtype,x,stats):
+    fit = getattr(scipy.stats,dtype).pdf
+    if len(stats)==2:
+        distfit = fit(x, stats[0], stats[1])
+    if len(stats)==3:    
+        distfit = fit(x, stats[0], stats[1], stats[2])
+    if len(stats)==4:
+        distfit = fit(x, stats[0], stats[1], stats[2], stats[3])
+    if len(stats)==5:
+        distfit = fit(x, stats[0], stats[1], stats[2], stats[3], stats[4])
+    return distfit 
+   
 for n, name in zip(range(0, len(variables)), variables):
-    plt.figure(num = n)
+    plt.figure(num = n, figsize = (8,6))
+    sb.histplot(dft[name], stat = "density", alpha = 0.5)
     plt.title(name)
-    sb.kdeplot(dft[name])
+    
     res = []
+    distfits = []
     for dtype in disttype:
         stats = getattr(scipy.stats,dtype).fit(dft[name])
+        distfits.append(probadensityfun(dtype,x,stats))
         kstest = scipy.stats.kstest(dft[name], dtype, args = stats)
         res.append((dtype, kstest[0],kstest[1]))
     res.sort(key=lambda x:float(x[2]), reverse=True)
-    print("*--------- Data Type: "+name+"----------*")
+    print("*------------------ Data Type: "+name+" ------------------*")
     for j in res:
         print("{}: statistic={}, pvalue={}".format(j[0], j[1], j[2]))
-    plt.plot(x, normfit[n])
-    plt.plot(x, skewfit[n])
-    plt.plot(x, burrfit[n])
-    plt.legend(["Data-Hist","Normal","Skew","Kurtosis"])
+    [plt.plot(x,den) for den in distfits]
+    plt.legend(legend)
     plt.show()
     
 
