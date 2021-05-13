@@ -5,6 +5,7 @@ import dateutil # Nos ayuda a agregat meses al datetime
 import seaborn as sb
 import matplotlib.pyplot as plt
 import scipy # Ayuda a crear distribuciones y arreglos
+from playsound import playsound # Just for fun
 
 # Crea distribuciones con el tipo de distribucion y paramestros de entrada.
 def probadensityfun(dtype,x,stats):
@@ -135,6 +136,8 @@ columns = var+[name+" STD" for name in var]
 dftar = pd.DataFrame(np.array(meantar+stdtar).T, columns = columns)
 dftar["Fecha"] = timevec
 dftar = dftar.set_index("Fecha")
-dftar.to_excel("MCSimulacion - Tarifas a futuri.xlsx")
+#dftar.to_excel("MCSimulacion - Tarifas a futuri.xlsx")
+mando = "the_mandalorian_bell.mp3"
+playsound(mando)
 
 
