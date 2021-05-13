@@ -92,7 +92,7 @@ for name, dtype in zip(var,disttype):
     plt.show()
     
 #### Simulacion Montecarlo 
-Nsim = 10000 #Numero de replicas
+Nsim = 1000000 #Numero de replicas
 Ntime = 20*4 # Numero de trimestres
 tarif0 = [float(df[name].loc[0]) for name in var] # Tarifas iniciales
 dftar = pd.DataFrame() # Dataframe vario para precios
