@@ -91,10 +91,13 @@ for name, dtype in zip(var,disttype):
     plt.show()
     
 #### Simulacion Montecarlo 
-Nsim = 1000 #Numero de replicas
+Nsim = 100 #Numero de replicas
 Ntime = 20*4 # Numero de trimestres
 tarif0 = [float(df[name].loc[0]) for name in var] # Tarifas iniciales
 dftar = pd.DataFrame() # Dataframe vario para precios
+vardfs = []
+meantar = []
+stdtar = []
 for name, tar0, distfit in zip(var,tarif0, distfits):
     tarlist = []
     for i in range(0,Nsim):
@@ -103,6 +106,35 @@ for name, tar0, distfit in zip(var,tarif0, distfits):
             ntar = tar[-1]*(1+np.random.choice(x, p = distfit)/100)
             tar.append(ntar)
         tarlist.append(tar)
-        #[plt.plot(tar) for tar in tarlist]
-        #plt.title(name)
-        #plt.show()
+    vardfs.append(pd.DataFrame(np.array(tarlist).T))    
+    plt.plot(vardfs[-1])
+    plt.title(name)
+    plt.show()
+    meantar.append([np.mean(f) for f in np.array(tarlist).T])
+    stdtar.append([np.std(f) for f in np.array(tarlist).T])
+
+### Desplegamos Resultados
+# Tarifas normales
+timevec = [dt.datetime(2022,1,1)-dateutil.relativedelta.relativedelta(months = 3)]
+for i in range(0,Ntime):
+    timevec.append(timevec[-1]+dateutil.relativedelta.relativedelta(months = 3))
+plt.title("Pronostico de Tarifas")    
+[plt.plot(timevec, mean) for mean in meantar[0:2]]
+[plt.fill_between(timevec, [x-d for x,d in zip(mean,std)],[x+d for x,d in zip(mean,std)], alpha = 0.2) for mean,std in zip(meantar[0:2],stdtar[0:2])]
+plt.legend(var[0:2])
+plt.show()
+
+plt.title("Pronostico de tarifa de potencia")
+plt.plot(timevec,meantar[-1])
+plt.fill_between(timevec, [x-d for x,d in zip(meantar[-1],stdtar[-1])],[x+d for x,d in zip(meantar[-1],stdtar[-1])], alpha = 0.2)
+plt.legend([var[-1]])
+plt.show()
+
+### Guardamos resultados de simulacion
+columns = var+[name+" STD" for name in var]
+dftar = pd.DataFrame(np.array(meantar+stdtar).T, columns = columns)
+dftar["Fecha"] = timevec
+dftar = dftar.set_index("Fecha")
+dftar.to_excel("MCSimulacion - Tarifas a futuri.xlsx")
+
+
