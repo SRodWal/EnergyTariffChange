@@ -55,7 +55,7 @@ for i in range(1,len(data)-1):
 dft = pd.DataFrame(Tchlist, columns = cols[1:7])
 #Graficar histograma de cambios porcentuales
 plt.figure(num = 1, figsize = (6,4))
-[sb.distplot(dft[name], rug = True, hist = False) for name in dft.columns]
+[sb.kdeplot(dft[name]) for name in dft.columns]
 plt.legend(dft.columns)
 plt.show()
 # Crear distribuciones
@@ -66,7 +66,7 @@ kurstats = []
 normfit = []
 skewfit = []
 burrfit = []
-disttype = ["norm", "skewnorm", "burr"]
+disttype = ["norm", "skewnorm","burr"]
 x = np.linspace(-40,40,100) # Rango de cambios porcentuales
 for v in variables:
     nstat = scipy.stats.distributions.norm.fit(dft[v]) # Normal
@@ -78,14 +78,19 @@ for v in variables:
     normstats.append(nstat)
     skewstats.append(skstat)
     kurstats.append(kurstat)
-
 for n, name in zip(range(0, len(variables)), variables):
     plt.figure(num = n)
     plt.title(name)
-    sb.distplot(dft[name], rug = True, hist = False)
+    sb.kdeplot(dft[name])
+    res = []
     for dtype in disttype:
-        kstest = scipy.stats.kstest(dft[name], dtype, normstats[n])
-        print(kstest)
+        stats = getattr(scipy.stats,dtype).fit(dft[name])
+        kstest = scipy.stats.kstest(dft[name], dtype, args = stats)
+        res.append((dtype, kstest[0],kstest[1]))
+    res.sort(key=lambda x:float(x[2]), reverse=True)
+    print("*--------- Data Type: "+name+"----------*")
+    for j in res:
+        print("{}: statistic={}, pvalue={}".format(j[0], j[1], j[2]))
     plt.plot(x, normfit[n])
     plt.plot(x, skewfit[n])
     plt.plot(x, burrfit[n])
