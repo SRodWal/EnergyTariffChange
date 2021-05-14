@@ -120,16 +120,22 @@ for name, tar0, distfit in zip(var,tarif0, distfits):
 timevec = [dt.datetime(2022,1,1)-dateutil.relativedelta.relativedelta(months = 3)]
 for i in range(0,Ntime):
     timevec.append(timevec[-1]+dateutil.relativedelta.relativedelta(months = 3))
-plt.title("Pronostico de Tarifas")    
+plt.figure(num=1, figsize = (8,4), dpi = 350)  
+plt.title("Pronóstico de Tarifas") 
 [plt.plot(timevec, mean) for mean in meantar[0:2]]
 [plt.fill_between(timevec, [x-d for x,d in zip(mean,std)],[x+d for x,d in zip(mean,std)], alpha = 0.2) for mean,std in zip(meantar[0:2],stdtar[0:2])]
 plt.legend(var[0:2])
+plt.xlabel("Tiempo")
+plt.ylabel("Lps/Khw")
 plt.show()
 
-plt.title("Pronostico de tarifa de potencia")
+plt.figure(num=2, figsize = (8,4),dpi = 350)
+plt.title("Pronóstico de tarifa de potencia")
 plt.plot(timevec,meantar[-1])
 plt.fill_between(timevec, [x-d for x,d in zip(meantar[-1],stdtar[-1])],[x+d for x,d in zip(meantar[-1],stdtar[-1])], alpha = 0.2)
 plt.legend([var[-1]])
+plt.xlabel("Tiempo")
+plt.ylabel("Lps/Kw")
 plt.show()
 
 ### Guardamos resultados de simulacion
